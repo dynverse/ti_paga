@@ -1,6 +1,6 @@
 id: paga
-docker_repository: dynverse/dynmethods:paga
-container_url: https://github.com/dynverse/dynmethods/tree/master/containers/paga
+docker_repository: dynverse/ti_paga
+container_url: https://github.com/dynverse/ti_paga
 name: PAGA
 type: algorithm
 implementation_id: paga
