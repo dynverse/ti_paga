@@ -1,6 +1,6 @@
 FROM dynverse/dynwrap:py3.6
 
-LABEL version 0.1.0
+LABEL version 0.1.1
 
 RUN pip install python-igraph louvain # igraph and louvain do not get installed by scanpy
 
