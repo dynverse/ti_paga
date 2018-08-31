@@ -68,7 +68,7 @@ sc.pl.paga(adata, threshold=0.01, layout='fr', show=False)
 
 # run dpt for pseudotime information that is overlayed with paga
 adata.uns['iroot'] = np.where(counts.index == start_id[0])[0][0]
-sc.tl.dpt(adata)
+sc.tl.dpt(adata, n_dcs = min(adata.obsm.X_diffmap.shape[1], 10))
 
 # run umap for a dimension-reduced embedding, use the positions of the paga
 # graph to initialize this embedding
