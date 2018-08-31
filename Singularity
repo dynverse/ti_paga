@@ -8,18 +8,17 @@ Bootstrap: shub
 From: dynverse/dynwrap:py3.6
 
 %labels
-    version 0.1.1
-
-%post
-    chmod -R a+r /code
-    chmod a+x /code
-    pip install python-igraph louvain # igraph and louvain do not get installed by scanpy
-    pip install feather-format
-    pip install scanpy
-    pip install fa2
+    version 0.1.2
 
 %files
     . /code
+
+%post
+    chmod -R 755 '/code'
+    pip install python-igraph louvain 
+    pip install feather-format
+    pip install scanpy
+    pip install fa2
 
 %runscript
     exec python /code/run.py
