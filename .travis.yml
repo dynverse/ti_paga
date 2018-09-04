@@ -20,6 +20,7 @@ addons:
 before_install:
   - git clone https://github.com/dynverse/travis_scripts.git
   - source travis_scripts/hdf5.sh
+  - Rscript -e "install.packages('feather',repos = 'http://cran.us.r-project.org')"
   - if [ "$CONTAINER" == "singularity" ]; then source travis_scripts/singularity.sh; fi
 install:
  - R -e 'if ("devtools" %in% rownames(installed.packages())) update.packages(oldPkgs = "devtools", ask = FALSE) else install.packages("devtools")'
