@@ -55,13 +55,15 @@ wrapper_type: branch_trajectory
 doi: 10.1101/208819
 google_scholar_cluster_id: '10470081259069082868'
 trajectory_types:
+- cycle
 - linear
 - bifurcation
 - convergence
 - multifurcation
-- binary_tree
 - tree
-- disconnected_tree
+- acyclic graph
+- graph
+- disconnected_graph
 topology_inference: free
 authors:
 - given: Alexander
