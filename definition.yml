@@ -62,7 +62,7 @@ trajectory_types:
 - convergence
 - multifurcation
 - tree
-- acyclic graph
+- acyclic_graph
 - graph
 - disconnected_graph
 topology_inference: free
