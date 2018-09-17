@@ -3,7 +3,7 @@ docker_repository: dynverse/ti_paga
 singularity_collection: 1560
 container_url: https://github.com/dynverse/ti_paga
 name: PAGA
-type: algorithm
+source: tool
 implementation_id: paga
 platform: Python
 parameters:
