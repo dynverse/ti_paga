@@ -8,7 +8,7 @@ RUN pip install scanpy
 
 RUN pip install fa2
 
-LABEL version 0.1.3
+LABEL version 0.1.4
 
 ADD . /code
 

@@ -40,6 +40,12 @@ parameters:
     values:
     - umap
     - fa
+  connectivity_cutoff:
+    description: Cutoff for the connectivity matrix
+    type: numeric
+    lower: 0
+    upper: 1
+    default: 0.01
 input:
   format: hdf5
   required:

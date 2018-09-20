@@ -102,12 +102,12 @@ grouping.reset_index(drop=True).to_feather("/ti/output/grouping.feather")
 
 # milestone network
 milestone_network = pd.DataFrame(
-  adata.uns["paga"]["connectivities_tree"].todense(),
+  np.triu(adata.uns["paga"]["connectivities"].todense(), k = 0),
   index=adata.obs.louvain.cat.categories,
   columns=adata.obs.louvain.cat.categories
 ).stack().reset_index()
 milestone_network.columns = ["from", "to", "length"]
-milestone_network = milestone_network.query("length > 0").reset_index(drop=True)
+milestone_network = milestone_network.query("length >= " + str(params["connectivity_cutoff"])).reset_index(drop=True)
 milestone_network["directed"] = False
 milestone_network.to_feather("/ti/output/milestone_network.feather")
 
