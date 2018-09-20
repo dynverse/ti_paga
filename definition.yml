@@ -45,7 +45,7 @@ parameters:
     type: numeric
     lower: 0
     upper: 1
-    default: 0.01
+    default: 0.05
 input:
   format: hdf5
   required:
