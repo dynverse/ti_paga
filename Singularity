@@ -16,7 +16,6 @@ From: dynverse/dynwrap:py3.6
 %post
     chmod -R 755 '/code'
     pip install python-igraph louvain 
-    pip install feather-format
     pip install scanpy
     pip install fa2
 
