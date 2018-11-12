@@ -94,11 +94,11 @@ checkpoints["method_aftermethod"] = time.time()
 cell_ids = pd.DataFrame({
   "cell_ids": counts.index
 })
-cell_ids.to_feather("/ti/output/cell_ids.feather")
+cell_ids.to_csv("/ti/output/cell_ids.csv", index=False)
 
 # grouping
 grouping = pd.DataFrame({"cell_id": counts.index, "group_id": adata.obs.louvain})
-grouping.reset_index(drop=True).to_feather("/ti/output/grouping.feather")
+grouping.reset_index(drop=True).to_csv("/ti/output/grouping.csv", index=False)
 
 # milestone network
 milestone_network = pd.DataFrame(
@@ -109,13 +109,13 @@ milestone_network = pd.DataFrame(
 milestone_network.columns = ["from", "to", "length"]
 milestone_network = milestone_network.query("length >= " + str(params["connectivity_cutoff"])).reset_index(drop=True)
 milestone_network["directed"] = False
-milestone_network.to_feather("/ti/output/milestone_network.feather")
+milestone_network.to_csv("/ti/output/milestone_network.csv", index=False)
 
 # dimred
 dimred = pd.DataFrame([x for x in adata.obsm['X_umap'].T]).T
 dimred.columns = ["comp_" + str(i) for i in range(dimred.shape[1])]
 dimred["cell_id"] = counts.index
-dimred.reset_index(drop=True).to_feather("/ti/output/dimred.feather")
+dimred.reset_index(drop=True).to_csv("/ti/output/dimred.csv", index=False)
 
 # branch progressions: the scaled dpt_pseudotime within every cluster
 branch_progressions = adata.obs
@@ -124,7 +124,7 @@ branch_progressions["percentage"] = branch_progressions.groupby("louvain")["dpt_
 branch_progressions["cell_id"] = counts.index
 branch_progressions["branch_id"] = branch_progressions["louvain"].astype(np.str)
 branch_progressions = branch_progressions[["cell_id", "branch_id", "percentage"]]
-branch_progressions.reset_index(drop=True).to_feather("/ti/output/branch_progressions.feather")
+branch_progressions.reset_index(drop=True).to_csv("/ti/output/branch_progressions.csv", index=False)
 
 # branches:
 # - length = difference between max and min dpt_pseudotime within every cluster
@@ -133,7 +133,7 @@ branches = adata.obs.groupby("louvain").apply(lambda x: x["dpt_pseudotime"].max(
 branches.columns = ["branch_id", "length"]
 branches["branch_id"] = branches["branch_id"].astype(np.str)
 branches["directed"] = True
-branches.to_feather("/ti/output/branches.feather")
+branches.to_csv("/ti/output/branches.csv", index=False)
 
 # branch network: determine order of from and to based on difference in average pseudotime
 branch_network = milestone_network[["from", "to"]]
@@ -143,10 +143,10 @@ for i, (branch_from, branch_to) in enumerate(zip(branch_network["from"], branch_
     branch_network.at[i, "to"] = branch_from
     branch_network.at[i, "from"] = branch_to
 
-branch_network.to_feather("/ti/output/branch_network.feather")
+branch_network.to_csv("/ti/output/branch_network.csv", index=False)
 
 # timings
 timings = pd.Series(checkpoints)
 timings.index.name = "name"
 timings.name = "timings"
-timings.reset_index().to_feather("/ti/output/timings.feather")
+timings.reset_index().to_csv("/ti/output/timings.csv", index=False)
