@@ -1,66 +1,11 @@
+# method info
 id: paga
-docker_repository: dynverse/ti_paga
-singularity_collection: 1560
-container_url: https://github.com/dynverse/ti_paga
 name: PAGA
-source: tool
 implementation_id: paga
-platform: Python
-parameters:
-  n_neighbors:
-    description: Number of neighbours for knn
-    type: integer
-    lower: 1
-    upper: 100
-    default: 15
-  n_comps:
-    description: Number of principal components
-    type: integer
-    lower: 0
-    upper: 100
-    default: 50
-  n_dcs:
-    description: Number of diffusion components for denoising graph, 0 means no denoising.
-    type: integer
-    lower: 0
-    upper: 40
-    default: 15
-  resolution:
-    description: Resolution of louvain clustering, which determines the granularity
-      of the clustering. Higher values will result in more clusters.
-    type: numeric
-    lower: 0.1
-    upper: 10
-    default: 1
-  embedding_type:
-    description: Either 'umap' (scales very well, recommended for very large datasets)
-      or 'fa' (ForceAtlas2, often a bit more intuitive for small datasets).
-    type: discrete
-    default: fa
-    values:
-    - umap
-    - fa
-  connectivity_cutoff:
-    description: Cutoff for the connectivity matrix
-    type: numeric
-    lower: 0
-    upper: 1
-    default: 0.05
-input:
-  format: hdf5
-  required:
-  - counts
-  - start_id
-  optional: groups_id
-output:
-  format: text
-  outputs:
-  - branch_trajectory
-  - dimred
-  - timings
 wrapper_type: branch_trajectory
-doi: 10.1101/208819
-google_scholar_cluster_id: '10470081259069082868'
+source: tool
+platform: Python
+topology_inference: free
 trajectory_types:
 - cycle
 - linear
@@ -71,7 +16,17 @@ trajectory_types:
 - acyclic_graph
 - graph
 - disconnected_graph
-topology_inference: free
+code_url: https://github.com/theislab/graph_abstraction
+
+# container info
+docker_repository: dynverse/ti_paga
+singularity_collection: 1560
+container_url: https://github.com/dynverse/ti_paga
+
+# manuscript info
+doi: 10.1101/208819
+google_scholar_cluster_id: '10470081259069082868'
+preprint_date: '2017-10-27'
 authors:
 - given: Alexander
   family: Wolf
@@ -82,5 +37,73 @@ authors:
   family: Theis
   email: fabian.theis@helmholtz-muenchen.de
   github: theislab
-preprint_date: '2017-10-27'
-code_url: https://github.com/theislab/graph_abstraction
+
+# parameters
+parameters:
+- id: n_neighbors
+  description: Number of neighbours for knn
+  class: integer_parameter
+  default: 15
+  distribution:
+    class: uniform_distribution
+    lower: 1
+    upper: 100
+- id: n_comps
+  description: Number of principal components
+  class: integer_parameter
+  default: 50
+  distribution:
+    class: uniform_distribution
+    lower: 0
+    upper: 100
+- id: n_dcs
+  description: Number of diffusion components for denoising graph, 0 means no denoising.
+  class: integer_parameter
+  default: 15
+  distribution:
+    class: uniform_distribution
+    lower: 0
+    upper: 40
+- id: resolution
+  description: Resolution of louvain clustering, which determines the granularity
+    of the clustering. Higher values will result in more clusters.
+  class: numeric_parameter
+  default: 1
+  distribution:
+    class: uniform_distribution
+    lower: 0.1
+    upper: 10
+- id: embedding_type
+  description: Either 'umap' (scales very well, recommended for very large datasets)
+    or 'fa' (ForceAtlas2, often a bit more intuitive for small datasets).
+  class: character_parameter
+  default: fa
+  values:
+  - umap
+  - fa
+- id: connectivity_cutoff
+  description: Cutoff for the connectivity matrix
+  class: numeric_parameter
+  default: 0.05
+  distribution:
+    class: uniform_distribution
+    lower: 0
+    upper: 1
+
+# input
+input:
+  format: hdf5
+  required:
+  - counts
+  - start_id
+  optional: groups_id
+
+# output
+output:
+  format: text
+  outputs:
+  - branch_trajectory
+  - dimred
+  - timings
+
+
