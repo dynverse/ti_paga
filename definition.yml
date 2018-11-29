@@ -1,42 +1,48 @@
-# method info
-id: paga
-name: PAGA
-implementation_id: paga
-wrapper_type: branch_trajectory
-source: tool
-platform: Python
-topology_inference: free
-trajectory_types:
-- cycle
-- linear
-- bifurcation
-- convergence
-- multifurcation
-- tree
-- acyclic_graph
-- graph
-- disconnected_graph
-code_url: https://github.com/theislab/graph_abstraction
+# method
+method_info:
+  id: paga
+  name: PAGA
+  implementation_id: paga
+  source: tool
+  platform: Python
+  code_url: https://github.com/theislab/graph_abstraction
+  authors:
+  - given: Alexander
+    family: Wolf
+    email: alex.wolf@helmholtz-muenchen.de
+    github: falexwolf
+    ORCID: 0000-0002-8760-7838
+  - given: Fabian
+    family: Theis
+    email: fabian.theis@helmholtz-muenchen.de
+    github: theislab
 
-# container info
-docker_repository: dynverse/ti_paga
-singularity_collection: 1560
-container_url: https://github.com/dynverse/ti_paga
+# wrapper
+wrapper_info:
+  wrapper_type: branch_trajectory
+  topology_inference: free
+  trajectory_types:
+  - cycle
+  - linear
+  - bifurcation
+  - convergence
+  - multifurcation
+  - tree
+  - acyclic_graph
+  - graph
+  - disconnected_graph
 
-# manuscript info
-doi: 10.1101/208819
-google_scholar_cluster_id: '10470081259069082868'
-preprint_date: '2017-10-27'
-authors:
-- given: Alexander
-  family: Wolf
-  email: alex.wolf@helmholtz-muenchen.de
-  github: falexwolf
-  ORCID: 0000-0002-8760-7838
-- given: Fabian
-  family: Theis
-  email: fabian.theis@helmholtz-muenchen.de
-  github: theislab
+# container
+container_info:
+  docker_repository: dynverse/ti_paga
+  singularity_collection: 1560
+  container_url: https://github.com/dynverse/ti_paga
+
+# manuscript
+manuscript_info:
+  doi: 10.1101/208819
+  google_scholar_cluster_id: '10470081259069082868'
+  preprint_date: '2017-10-27'
 
 # parameters
 parameters:
