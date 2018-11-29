@@ -42,51 +42,51 @@ authors:
 parameters:
 - id: n_neighbors
   description: Number of neighbours for knn
-  class: integer_parameter
+  type: integer
   default: 15
   distribution:
-    class: uniform_distribution
+    type: uniform
     lower: 1
     upper: 100
 - id: n_comps
   description: Number of principal components
-  class: integer_parameter
+  type: integer
   default: 50
   distribution:
-    class: uniform_distribution
+    type: uniform
     lower: 0
     upper: 100
 - id: n_dcs
   description: Number of diffusion components for denoising graph, 0 means no denoising.
-  class: integer_parameter
+  type: integer
   default: 15
   distribution:
-    class: uniform_distribution
+    type: uniform
     lower: 0
     upper: 40
 - id: resolution
   description: Resolution of louvain clustering, which determines the granularity
     of the clustering. Higher values will result in more clusters.
-  class: numeric_parameter
+  type: numeric
   default: 1
   distribution:
-    class: uniform_distribution
+    type: uniform
     lower: 0.1
     upper: 10
 - id: embedding_type
   description: Either 'umap' (scales very well, recommended for very large datasets)
     or 'fa' (ForceAtlas2, often a bit more intuitive for small datasets).
-  class: character_parameter
+  type: character
   default: fa
   values:
   - umap
   - fa
 - id: connectivity_cutoff
   description: Cutoff for the connectivity matrix
-  class: numeric_parameter
+  type: numeric
   default: 0.05
   distribution:
-    class: uniform_distribution
+    type: uniform
     lower: 0
     upper: 1
 
