@@ -6,26 +6,32 @@ os:
   - linux
 cache:
   directories:
-    - $HOME/.cache # hdf5, singularity
+    - $HOME/.cache # hdf5
     - $HOME/R/Library
 services:
-  - docker
-env:
- - CONTAINER=docker
- - CONTAINER=singularity
+- docker
 addons:
   apt:
     packages:
       - libssh-dev  # PRISM > ssh > libssh-dev
 before_install:
-  - git clone https://github.com/dynverse/travis_scripts.git
-  - source travis_scripts/hdf5.sh
-  - if [ "$CONTAINER" == "singularity" ]; then source travis_scripts/singularity.sh; fi
+- openssl aes-256-cbc -K $encrypted_030782d20dd6_key -iv $encrypted_030782d20dd6_iv
+  -in credentials.enc -out credentials -d
+- source credentials
+- sudo apt update -y
+- sudo apt install --only-upgrade docker-ce -y
+- git clone https://github.com/dynverse/travis_scripts.git
+- source travis_scripts/hdf5.sh
 install:
- - R -e 'if ("devtools" %in% rownames(installed.packages())) update.packages(oldPkgs = "devtools", ask = FALSE) else install.packages("devtools")'
- - R -e 'devtools::install_github("dynverse/dynwrap", dep = TRUE, upgrade = TRUE)'
- - R -e 'devtools::install_github("dynverse/dyntoy", upgrade = TRUE)'
- - R -e 'devtools::install_github("dynverse/dyneval", dep = TRUE, upgrade = TRUE)'
+- R -e 'if ("devtools" %in% rownames(installed.packages())) update.packages(oldPkgs = "devtools", ask = FALSE) else install.packages("devtools")'
+- R -e 'devtools::install_github("dynverse/dynwrap", dep = TRUE, upgrade = TRUE)'
+- R -e 'devtools::install_github("dynverse/dyntoy", upgrade = TRUE)'
+- R -e 'devtools::install_github("dynverse/dyneval", dep = TRUE, upgrade = TRUE)'
 script:
- - if [ "$CONTAINER" == "singularity" ]; then source travis_scripts/test_singularity_image.sh; fi
- - if [ "$CONTAINER" == "docker" ]; then source travis_scripts/test_docker_image.sh; fi
+- source travis_scripts/test_docker_image.sh
+- source docker_info
+- sudo docker build --build-arg GITHUB_PAT=${GITHUB_PAT} -t $TRAVIS_REPO_SLUG:v$VERSION .
+- docker tag $TRAVIS_REPO_SLUG:v$VERSION $TRAVIS_REPO_SLUG:latest
+after_success:
+- if [[ "$TRAVIS_BRANCH" == "master" ]]; then docker login -u $DOCKER_USERNAME -p
+  $DOCKER_PASSWORD ; docker push $TRAVIS_REPO_SLUG ; fi
