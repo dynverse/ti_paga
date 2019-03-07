@@ -1,3 +1,5 @@
+#!/usr/local/bin/python
+
 # avoid errors due to no $DISPLAY environment variable available when running sc.pl.paga
 import matplotlib
 matplotlib.use('Agg')
@@ -17,11 +19,11 @@ import dynclipy
 
 #   ____________________________________________________________________________
 #   Load data                                                               ####
-# task = dynclipy.main()
-task = dynclipy.main(
-  ["--dataset", "/code/example.h5", "--start_id", "C1", "--output", "test"],
-  "/code/definition.yml"
-)
+task = dynclipy.main()
+# task = dynclipy.main(
+#   ["--dataset", "/code/example.h5", "--start_id", "C1", "--output", "test"],
+#   "/code/definition.yml"
+# )
 
 counts = task["counts"]
 
@@ -163,5 +165,5 @@ output["timings"] = timings
 dynclipy.write_output(
   output,
   task["output"],
-  ["branch_trajectory", "timings"]#, "dimred"
+  ["branch_trajectory", "timings"]#, "dimred"]
 )
