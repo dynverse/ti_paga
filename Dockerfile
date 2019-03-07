@@ -1,14 +1,12 @@
 FROM dynverse/dynwrappy3:v0.1.0
 
-ARG GITHUB_PAT
-
 # igraph and louvain do not get installed by scanpy
-RUN pip install python-igraph louvain 
+RUN pip install python-igraph louvain
 
 RUN pip install scanpy
 
 RUN pip install fa2
 
-COPY definition.yml example.R run.py /code/
+COPY definition.yml example.h5 run.py /code/
 
-ENTRYPOINT python /code/run.py
+ENTRYPOINT ["/code/run.py"]

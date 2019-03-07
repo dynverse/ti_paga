@@ -29,6 +29,11 @@ wrapper:
   - acyclic_graph
   - graph
   - disconnected_graph
+  input_required:
+  - counts
+  - start_id
+  input_optional:
+  - groups_id
 
 container:
   docker: dynverse/ti_paga
@@ -89,19 +94,3 @@ parameters:
     type: uniform
     lower: 0
     upper: 1
-
-input:
-  format: hdf5
-  required:
-  - counts
-  - start_id
-  optional: groups_id
-
-output:
-  format: text
-  outputs:
-  - branch_trajectory
-  - dimred
-  - timings
-
-

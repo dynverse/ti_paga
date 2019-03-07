@@ -13,16 +13,25 @@ import anndata
 import time
 checkpoints = {}
 
+import dynclipy
+
 #   ____________________________________________________________________________
 #   Load data                                                               ####
-data = h5py.File("/ti/input/data.h5", "r")
-counts = pd.DataFrame(data['counts'][:].T, index = data['counts_rows'][:].astype(np.str), columns = data['counts_cols'][:].astype(np.str))
-start_id = data['start_id'][:].astype(np.str)
-data.close()
+# task = dynclipy.main()
+task = dynclipy.main(
+  ["--dataset", "/code/example.h5", "--start_id", "C1", "--output", "test"],
+  "/code/definition.yml"
+)
 
-params = json.load(open("/ti/input/params.json", "r"))
+counts = task["counts"]
 
-if "groups_id" in data:
+params = task["params"]
+
+start_id = task["priors"]["start_id"]
+if isinstance(start_id, list):
+  start_id = start_id[0]
+
+if "groups_id" in task["priors"]:
   groups_id = data['groups_id']
 else:
   groups_id = None
@@ -76,7 +85,7 @@ sc.tl.paga(adata)
 sc.pl.paga(adata, threshold=0.01, layout='fr', show=False)
 
 # run dpt for pseudotime information that is overlayed with paga
-adata.uns['iroot'] = np.where(counts.index == start_id[0])[0][0]
+adata.uns['iroot'] = np.where(counts.index == start_id)[0][0]
 sc.tl.dpt(adata, n_dcs = min(adata.obsm.X_diffmap.shape[1], 10))
 
 # run umap for a dimension-reduced embedding, use the positions of the paga
@@ -90,15 +99,14 @@ checkpoints["method_aftermethod"] = time.time()
 
 #   ____________________________________________________________________________
 #   Process & save output                                                   ####
+output = {}
+
 # cell ids
-cell_ids = pd.DataFrame({
-  "cell_ids": counts.index
-})
-cell_ids.to_csv("/ti/output/cell_ids.csv", index=False)
+output["cell_ids"] = counts.index
 
 # grouping
 grouping = pd.DataFrame({"cell_id": counts.index, "group_id": adata.obs.louvain})
-grouping.reset_index(drop=True).to_csv("/ti/output/grouping.csv", index=False)
+output["grouping"] = grouping
 
 # milestone network
 milestone_network = pd.DataFrame(
@@ -109,13 +117,13 @@ milestone_network = pd.DataFrame(
 milestone_network.columns = ["from", "to", "length"]
 milestone_network = milestone_network.query("length >= " + str(params["connectivity_cutoff"])).reset_index(drop=True)
 milestone_network["directed"] = False
-milestone_network.to_csv("/ti/output/milestone_network.csv", index=False)
+output["milestone_network"] = milestone_network
 
 # dimred
 dimred = pd.DataFrame([x for x in adata.obsm['X_umap'].T]).T
 dimred.columns = ["comp_" + str(i) for i in range(dimred.shape[1])]
 dimred["cell_id"] = counts.index
-dimred.reset_index(drop=True).to_csv("/ti/output/dimred.csv", index=False)
+output["dimred"] = dimred
 
 # branch progressions: the scaled dpt_pseudotime within every cluster
 branch_progressions = adata.obs
@@ -124,7 +132,7 @@ branch_progressions["percentage"] = branch_progressions.groupby("louvain")["dpt_
 branch_progressions["cell_id"] = counts.index
 branch_progressions["branch_id"] = branch_progressions["louvain"].astype(np.str)
 branch_progressions = branch_progressions[["cell_id", "branch_id", "percentage"]]
-branch_progressions.reset_index(drop=True).to_csv("/ti/output/branch_progressions.csv", index=False)
+output["branch_progressions"] = branch_progressions
 
 # branches:
 # - length = difference between max and min dpt_pseudotime within every cluster
@@ -133,7 +141,7 @@ branches = adata.obs.groupby("louvain").apply(lambda x: x["dpt_pseudotime"].max(
 branches.columns = ["branch_id", "length"]
 branches["branch_id"] = branches["branch_id"].astype(np.str)
 branches["directed"] = True
-branches.to_csv("/ti/output/branches.csv", index=False)
+output["branches"] = branches
 
 # branch network: determine order of from and to based on difference in average pseudotime
 branch_network = milestone_network[["from", "to"]]
@@ -143,10 +151,17 @@ for i, (branch_from, branch_to) in enumerate(zip(branch_network["from"], branch_
     branch_network.at[i, "to"] = branch_from
     branch_network.at[i, "from"] = branch_to
 
-branch_network.to_csv("/ti/output/branch_network.csv", index=False)
+output["branch_network"] = branch_network
 
 # timings
 timings = pd.Series(checkpoints)
 timings.index.name = "name"
 timings.name = "timings"
-timings.reset_index().to_csv("/ti/output/timings.csv", index=False)
+output["timings"] = timings
+
+# save
+dynclipy.write_output(
+  output,
+  task["output"],
+  ["branch_trajectory", "timings"]#, "dimred"
+)
