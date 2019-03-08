@@ -168,13 +168,6 @@ timings.name = "timings"
 output["timings"] = timings
 
 # save
-dynclipy.write_output(
-  output,
-  task["output"],
-  ["branch_trajectory", "timings"]#, "dimred"]
-)
-
-
 dataset = dynclipy.wrap_data(cell_ids = counts.index)
 dataset.add_branch_trajectory(
   grouping = output["grouping"], 
