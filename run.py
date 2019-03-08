@@ -20,8 +20,14 @@ import dynclipy
 #   ____________________________________________________________________________
 #   Load data                                                               ####
 task = dynclipy.main()
+# git clone https://github.com/dynverse/dynclipy.git
+# cd dynclipy
+# pip install git+https://github.com/dynverse/dynclipy.git --upgrade --user
+# R -e "devtools::install_github('dynverse/dynutils@devel', dep = F)"
+# R -e "devtools::install_github('dynverse/dyncli', dep = F)"
+# R -e "devtools::install_github('dynverse/dynwrap@singularity3')"
 # task = dynclipy.main(
-#   ["--dataset", "/code/example.h5", "--start_id", "C1", "--output", "test"],
+#   ["--dataset", "/code/example.h5", "--output", "/mnt/output"],
 #   "/code/definition.yml"
 # )
 
@@ -34,14 +40,14 @@ if isinstance(start_id, list):
   start_id = start_id[0]
 
 if "groups_id" in task["priors"]:
-  groups_id = data['groups_id']
+  groups_id = task["priors"]['groups_id']
 else:
   groups_id = None
 
 # create dataset
 if groups_id is not None:
-  obs = groups_id
-  obs["louvain"] = obs.group_id.astyp("category")
+  obs = pd.DataFrame(groups_id)
+  obs["louvain"] = obs["group_id"].astype("category")
   adata = anndata.AnnData(counts.values, obs)
 else:
   adata = anndata.AnnData(counts.values)
@@ -167,3 +173,17 @@ dynclipy.write_output(
   task["output"],
   ["branch_trajectory", "timings"]#, "dimred"]
 )
+
+
+dataset = dynclipy.wrap_data(cell_ids = counts.index)
+dataset.add_branch_trajectory(
+  grouping = output["grouping"], 
+  milestone_network = output["milestone_network"],
+  branch_progressions = output["branch_progressions"],
+  branches = output["branches"],
+  branch_network = output["branch_network"]
+)
+dataset.add_dimred(
+  dimred = output["dimred"]
+)
+dataset.write_output(task["output"])
