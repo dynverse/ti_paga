@@ -1,4 +1,4 @@
-FROM dynverse/dynwrappy3:v0.1.0
+FROM dynverse/dynwrappy:v0.1.0
 
 # igraph and louvain do not get installed by scanpy
 RUN pip install python-igraph louvain
