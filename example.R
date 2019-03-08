@@ -15,4 +15,4 @@ data$params <- list()
 
 # write example dataset to file
 file <- commandArgs(trailingOnly = TRUE)[[1]]
-dyncli::write_h5(data[c("counts", "expression", "params", "prior_information")], file)
+dynutils::write_h5(data[c("counts", "expression", "params", "prior_information")], file)
