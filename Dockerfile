@@ -7,6 +7,6 @@ RUN pip install scanpy
 
 RUN pip install fa2
 
-COPY definition.yml example.h5 run.py /code/
+COPY definition.yml run.py example.sh /code/
 
 ENTRYPOINT ["/code/run.py"]
