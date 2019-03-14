@@ -1,5 +1,7 @@
 FROM dynverse/dynwrappy:v0.1.0
 
+ARG GITHUB_PAT
+
 # igraph and louvain do not get installed by scanpy
 RUN pip install python-igraph louvain
 
