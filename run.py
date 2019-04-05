@@ -1,3 +1,8 @@
+#!/usr/local/bin/python
+
+import dynclipy
+task = dynclipy.main()
+
 # avoid errors due to no $DISPLAY environment variable available when running sc.pl.paga
 import matplotlib
 matplotlib.use('Agg')
@@ -15,22 +20,24 @@ checkpoints = {}
 
 #   ____________________________________________________________________________
 #   Load data                                                               ####
-data = h5py.File("/ti/input/data.h5", "r")
-counts = pd.DataFrame(data['counts'][:].T, index = data['counts_rows'][:].astype(np.str), columns = data['counts_cols'][:].astype(np.str))
-start_id = data['start_id'][:].astype(np.str)
-data.close()
 
-params = json.load(open("/ti/input/params.json", "r"))
+counts = task["counts"]
 
-if "groups_id" in data:
-  groups_id = data['groups_id']
+parameters = task["parameters"]
+
+start_id = task["priors"]["start_id"]
+if isinstance(start_id, list):
+  start_id = start_id[0]
+
+if "groups_id" in task["priors"]:
+  groups_id = task["priors"]['groups_id']
 else:
   groups_id = None
 
 # create dataset
 if groups_id is not None:
-  obs = groups_id
-  obs["louvain"] = obs.group_id.astyp("category")
+  obs = pd.DataFrame(groups_id)
+  obs["louvain"] = obs["group_id"].astype("category")
   adata = anndata.AnnData(counts.values, obs)
 else:
   adata = anndata.AnnData(counts.values)
@@ -51,19 +58,19 @@ else:
   sc.pp.scale(adata)
 
 # precalculating some dimensionality reductions
-sc.tl.pca(adata, n_comps=params["n_comps"])
-sc.pp.neighbors(adata, n_neighbors=params["n_neighbors"])
+sc.tl.pca(adata, n_comps=parameters["n_comps"])
+sc.pp.neighbors(adata, n_neighbors=parameters["n_neighbors"])
 
 # denoise the graph by recomputing it in the first few diffusion components
-if params["n_dcs"] != 0:
-  sc.tl.diffmap(adata, n_comps=params["n_dcs"])
+if parameters["n_dcs"] != 0:
+  sc.tl.diffmap(adata, n_comps=parameters["n_dcs"])
 
 #   ____________________________________________________________________________
 #   Cluster, infer trajectory, infer pseudotime, compute dimension reduction ###
 
 # add grouping if not provided
 if groups_id is None:
-  sc.tl.louvain(adata, resolution=params["resolution"])
+  sc.tl.louvain(adata, resolution=parameters["resolution"])
 
 # run paga
 sc.tl.paga(adata)
@@ -76,12 +83,12 @@ sc.tl.paga(adata)
 sc.pl.paga(adata, threshold=0.01, layout='fr', show=False)
 
 # run dpt for pseudotime information that is overlayed with paga
-adata.uns['iroot'] = np.where(counts.index == start_id[0])[0][0]
+adata.uns['iroot'] = np.where(counts.index == start_id)[0][0]
 sc.tl.dpt(adata, n_dcs = min(adata.obsm.X_diffmap.shape[1], 10))
 
 # run umap for a dimension-reduced embedding, use the positions of the paga
 # graph to initialize this embedding
-if params["embedding_type"] != 'fa':
+if parameters["embedding_type"] != 'fa':
   sc.tl.draw_graph(adata, init_pos='paga')
 else:
   sc.tl.umap(adata, init_pos='paga')
@@ -90,15 +97,9 @@ checkpoints["method_aftermethod"] = time.time()
 
 #   ____________________________________________________________________________
 #   Process & save output                                                   ####
-# cell ids
-cell_ids = pd.DataFrame({
-  "cell_ids": counts.index
-})
-cell_ids.to_csv("/ti/output/cell_ids.csv", index=False)
 
 # grouping
 grouping = pd.DataFrame({"cell_id": counts.index, "group_id": adata.obs.louvain})
-grouping.reset_index(drop=True).to_csv("/ti/output/grouping.csv", index=False)
 
 # milestone network
 milestone_network = pd.DataFrame(
@@ -107,15 +108,13 @@ milestone_network = pd.DataFrame(
   columns=adata.obs.louvain.cat.categories
 ).stack().reset_index()
 milestone_network.columns = ["from", "to", "length"]
-milestone_network = milestone_network.query("length >= " + str(params["connectivity_cutoff"])).reset_index(drop=True)
+milestone_network = milestone_network.query("length >= " + str(parameters["connectivity_cutoff"])).reset_index(drop=True)
 milestone_network["directed"] = False
-milestone_network.to_csv("/ti/output/milestone_network.csv", index=False)
 
 # dimred
 dimred = pd.DataFrame([x for x in adata.obsm['X_umap'].T]).T
 dimred.columns = ["comp_" + str(i) for i in range(dimred.shape[1])]
 dimred["cell_id"] = counts.index
-dimred.reset_index(drop=True).to_csv("/ti/output/dimred.csv", index=False)
 
 # branch progressions: the scaled dpt_pseudotime within every cluster
 branch_progressions = adata.obs
@@ -124,7 +123,6 @@ branch_progressions["percentage"] = branch_progressions.groupby("louvain")["dpt_
 branch_progressions["cell_id"] = counts.index
 branch_progressions["branch_id"] = branch_progressions["louvain"].astype(np.str)
 branch_progressions = branch_progressions[["cell_id", "branch_id", "percentage"]]
-branch_progressions.reset_index(drop=True).to_csv("/ti/output/branch_progressions.csv", index=False)
 
 # branches:
 # - length = difference between max and min dpt_pseudotime within every cluster
@@ -133,7 +131,6 @@ branches = adata.obs.groupby("louvain").apply(lambda x: x["dpt_pseudotime"].max(
 branches.columns = ["branch_id", "length"]
 branches["branch_id"] = branches["branch_id"].astype(np.str)
 branches["directed"] = True
-branches.to_csv("/ti/output/branches.csv", index=False)
 
 # branch network: determine order of from and to based on difference in average pseudotime
 branch_network = milestone_network[["from", "to"]]
@@ -143,10 +140,16 @@ for i, (branch_from, branch_to) in enumerate(zip(branch_network["from"], branch_
     branch_network.at[i, "to"] = branch_from
     branch_network.at[i, "from"] = branch_to
 
-branch_network.to_csv("/ti/output/branch_network.csv", index=False)
+# save
+dataset = dynclipy.wrap_data(cell_ids = counts.index)
+dataset.add_branch_trajectory(
+  grouping = grouping,
+  milestone_network = milestone_network,
+  branch_progressions = branch_progressions,
+  branches = branches,
+  branch_network = branch_network
+)
+dataset.add_dimred(dimred = dimred)
+dataset.add_timings(checkpoints)
 
-# timings
-timings = pd.Series(checkpoints)
-timings.index.name = "name"
-timings.name = "timings"
-timings.reset_index().to_csv("/ti/output/timings.csv", index=False)
+dataset.write_output(task["output"])
