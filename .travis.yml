@@ -3,10 +3,7 @@ dist: trusty
 sudo: true
 os:
 - linux
-cache:
-  directories:
-  - "$HOME/.cache"
-  - "$HOME/R/Library"
+cache: packages
 services:
 - docker
 before_install:
@@ -26,11 +23,3 @@ script:
 - test_docker
 after_success:
 - push_docker
-jobs:
-  include:
-  - stage: cache
-    script:
-    - echo Do not build or test docker since this is a cache warmup
-    after_success:
-    - echo Do not push docker since this is a cache warmup
-  - stage: build
