@@ -36,7 +36,7 @@ else:
 
 # create dataset
 if groups_id is not None:
-  obs = pd.DataFrame({"group_id":groups_id}, index = counts.index)
+  obs = pd.DataFrame(groups_id, index = counts.index)
   obs["louvain"] = obs["group_id"].astype("category")
   adata = anndata.AnnData(counts, obs)
 else:
