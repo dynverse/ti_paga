@@ -38,9 +38,9 @@ else:
 if groups_id is not None:
   obs = pd.DataFrame(groups_id)
   obs["louvain"] = obs["group_id"].astype("category")
-  adata = anndata.AnnData(counts.values, obs)
+  adata = anndata.AnnData(counts, obs)
 else:
-  adata = anndata.AnnData(counts.values)
+  adata = anndata.AnnData(counts)
 
 checkpoints["method_afterpreproc"] = time.time()
 
@@ -83,7 +83,7 @@ sc.tl.paga(adata)
 sc.pl.paga(adata, threshold=0.01, layout='fr', show=False)
 
 # run dpt for pseudotime information that is overlayed with paga
-adata.uns['iroot'] = np.where(counts.index == start_id)[0][0]
+adata.uns['iroot'] = np.where(adata.obs.index == start_id)[0][0]
 sc.tl.dpt(adata, n_dcs = min(adata.obsm.X_diffmap.shape[1], 10))
 
 # run umap for a dimension-reduced embedding, use the positions of the paga
@@ -99,7 +99,7 @@ checkpoints["method_aftermethod"] = time.time()
 #   Process & save output                                                   ####
 
 # grouping
-grouping = pd.DataFrame({"cell_id": counts.index, "group_id": adata.obs.louvain})
+grouping = pd.DataFrame({"cell_id": adata.obs.index, "group_id": adata.obs.louvain})
 
 # milestone network
 milestone_network = pd.DataFrame(
@@ -114,13 +114,13 @@ milestone_network["directed"] = False
 # dimred
 dimred = pd.DataFrame([x for x in adata.obsm['X_umap'].T]).T
 dimred.columns = ["comp_" + str(i) for i in range(dimred.shape[1])]
-dimred["cell_id"] = counts.index
+dimred["cell_id"] = adata.obs.index
 
 # branch progressions: the scaled dpt_pseudotime within every cluster
 branch_progressions = adata.obs
 branch_progressions["dpt_pseudotime"] = branch_progressions["dpt_pseudotime"].replace([np.inf, -np.inf], 1) # replace unreachable pseudotime with maximal pseudotime
 branch_progressions["percentage"] = branch_progressions.groupby("louvain")["dpt_pseudotime"].apply(lambda x: (x-x.min())/(x.max() - x.min())).fillna(0.5)
-branch_progressions["cell_id"] = counts.index
+branch_progressions["cell_id"] = adata.obs.index
 branch_progressions["branch_id"] = branch_progressions["louvain"].astype(np.str)
 branch_progressions = branch_progressions[["cell_id", "branch_id", "percentage"]]
 
@@ -141,7 +141,7 @@ for i, (branch_from, branch_to) in enumerate(zip(branch_network["from"], branch_
     branch_network.at[i, "from"] = branch_to
 
 # save
-dataset = dynclipy.wrap_data(cell_ids = counts.index)
+dataset = dynclipy.wrap_data(cell_ids = adata.obs.index)
 dataset.add_branch_trajectory(
   grouping = grouping,
   milestone_network = milestone_network,
