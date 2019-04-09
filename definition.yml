@@ -75,42 +75,7 @@ parameters:
     of the clustering. Higher values will result in more clusters.
   type: numeric
   default: 1
-  distribution:method:
-  id: paga
-  name: PAGA
-  tool_id: paga
-  source: tool
-  platform: Python
-  url: https://github.com/theislab/graph_abstraction
-  authors:
-  - given: Alexander
-    family: Wolf
-    email: alex.wolf@helmholtz-muenchen.de
-    github: falexwolf
-    ORCID: 0000-0002-8760-7838
-  - given: Fabian
-    family: Theis
-    email: fabian.theis@helmholtz-muenchen.de
-    github: theislab
-
-wrapper:
-  type: branch_trajectory
-  topology_inference: free
-  trajectory_types:
-  - cycle
-  - linear
-  - bifurcation
-  - convergence
-  - multifurcation
-  - tree
-  - acyclic_graph
-  - graph
-  - disconnected_graph
-  input_required:
-  - counts
-  - start_id
-  input_optional:
-  - groups_id
+  distribution:
     type: uniform
     lower: 0.1
     upper: 10
