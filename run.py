@@ -145,7 +145,6 @@ for i, (branch_from, branch_to) in enumerate(zip(branch_network["from"], branch_
 dataset = dynclipy.wrap_data(cell_ids = adata.obs.index)
 dataset.add_branch_trajectory(
   grouping = grouping,
-  milestone_network = milestone_network,
   branch_progressions = branch_progressions,
   branches = branches,
   branch_network = branch_network
