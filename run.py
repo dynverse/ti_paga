@@ -52,7 +52,6 @@ checkpoints["method_afterpreproc"] = time.time()
 n_top_genes = min(2000, counts.shape[1])
 
 # normalisation & filtering
-# the recipe_zheng17 only works when > 150 cells because of `np.arange(10, 105, 5)` in filter_genes_dispersion. This should be fixed in the next scanpy release (> 1.2.2) as it is already fixed on github
 sc.pp.recipe_zheng17(adata, n_top_genes=n_top_genes)
 
 # precalculating some dimensionality reductions
@@ -82,6 +81,8 @@ sc.pl.paga(adata, threshold=0.01, layout='fr', show=False)
 
 # run dpt for pseudotime information that is overlayed with paga
 adata.uns['iroot'] = np.where(adata.obs.index == start_id)[0][0]
+if parameters["n_dcs"] == 0:
+  sc.tl.diffmap(adata)
 sc.tl.dpt(adata, n_dcs = min(adata.obsm.X_diffmap.shape[1], 10))
 
 # run umap for a dimension-reduced embedding, use the positions of the paga
