@@ -53,11 +53,7 @@ n_top_genes = min(2000, counts.shape[1])
 
 # normalisation & filtering
 # the recipe_zheng17 only works when > 150 cells because of `np.arange(10, 105, 5)` in filter_genes_dispersion. This should be fixed in the next scanpy release (> 1.2.2) as it is already fixed on github
-if counts.shape[1] >= 150:
-  sc.pp.recipe_zheng17(adata, n_top_genes=n_top_genes)
-else:
-  sc.pp.normalize_per_cell(adata)
-  sc.pp.scale(adata)
+sc.pp.recipe_zheng17(adata, n_top_genes=n_top_genes)
 
 # precalculating some dimensionality reductions
 sc.tl.pca(adata, n_comps=parameters["n_comps"])
