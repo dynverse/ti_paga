@@ -87,10 +87,12 @@ sc.tl.dpt(adata, n_dcs = min(adata.obsm.X_diffmap.shape[1], 10))
 
 # run umap for a dimension-reduced embedding, use the positions of the paga
 # graph to initialize this embedding
-if parameters["embedding_type"] != 'fa':
-  sc.tl.draw_graph(adata, init_pos='paga')
-else:
+if parameters["embedding_type"] == 'umap':
   sc.tl.umap(adata, init_pos='paga')
+  dimred_name = 'X_umap'
+else:
+  sc.tl.draw_graph(adata, init_pos='paga')
+  dimred_name = "X_draw_graph_" + parameters["embedding_type"]
 
 checkpoints["method_aftermethod"] = time.time()
 
@@ -111,8 +113,8 @@ milestone_network = milestone_network.query("length >= " + str(parameters["conne
 milestone_network["directed"] = False
 
 # dimred
-dimred = pd.DataFrame([x for x in adata.obsm['X_umap'].T]).T
-dimred.columns = ["comp_" + str(i) for i in range(dimred.shape[1])]
+dimred = pd.DataFrame([x for x in adata.obsm[dimred_name].T]).T
+dimred.columns = ["comp_" + str(i+1) for i in range(dimred.shape[1])]
 dimred["cell_id"] = adata.obs.index
 
 # branch progressions: the scaled dpt_pseudotime within every cluster
