@@ -52,12 +52,7 @@ checkpoints["method_afterpreproc"] = time.time()
 n_top_genes = min(2000, counts.shape[1])
 
 # normalisation & filtering
-# the recipe_zheng17 only works when > 150 cells because of `np.arange(10, 105, 5)` in filter_genes_dispersion. This should be fixed in the next scanpy release (> 1.2.2) as it is already fixed on github
-if counts.shape[1] >= 150:
-  sc.pp.recipe_zheng17(adata, n_top_genes=n_top_genes)
-else:
-  sc.pp.normalize_per_cell(adata)
-  sc.pp.scale(adata)
+sc.pp.recipe_zheng17(adata, n_top_genes=n_top_genes)
 
 # precalculating some dimensionality reductions
 sc.tl.pca(adata, n_comps=parameters["n_comps"])
@@ -86,14 +81,18 @@ sc.pl.paga(adata, threshold=0.01, layout='fr', show=False)
 
 # run dpt for pseudotime information that is overlayed with paga
 adata.uns['iroot'] = np.where(adata.obs.index == start_id)[0][0]
+if parameters["n_dcs"] == 0:
+  sc.tl.diffmap(adata)
 sc.tl.dpt(adata, n_dcs = min(adata.obsm.X_diffmap.shape[1], 10))
 
 # run umap for a dimension-reduced embedding, use the positions of the paga
 # graph to initialize this embedding
-if parameters["embedding_type"] != 'fa':
-  sc.tl.draw_graph(adata, init_pos='paga')
-else:
+if parameters["embedding_type"] == 'umap':
   sc.tl.umap(adata, init_pos='paga')
+  dimred_name = 'X_umap'
+else:
+  sc.tl.draw_graph(adata, init_pos='paga')
+  dimred_name = "X_draw_graph_" + parameters["embedding_type"]
 
 checkpoints["method_aftermethod"] = time.time()
 
@@ -114,8 +113,8 @@ milestone_network = milestone_network.query("length >= " + str(parameters["conne
 milestone_network["directed"] = False
 
 # dimred
-dimred = pd.DataFrame([x for x in adata.obsm['X_umap'].T]).T
-dimred.columns = ["comp_" + str(i) for i in range(dimred.shape[1])]
+dimred = pd.DataFrame([x for x in adata.obsm[dimred_name].T]).T
+dimred.columns = ["comp_" + str(i+1) for i in range(dimred.shape[1])]
 dimred["cell_id"] = adata.obs.index
 
 # branch progressions: the scaled dpt_pseudotime within every cluster
@@ -146,7 +145,6 @@ for i, (branch_from, branch_to) in enumerate(zip(branch_network["from"], branch_
 dataset = dynclipy.wrap_data(cell_ids = adata.obs.index)
 dataset.add_branch_trajectory(
   grouping = grouping,
-  milestone_network = milestone_network,
   branch_progressions = branch_progressions,
   branches = branches,
   branch_network = branch_network
