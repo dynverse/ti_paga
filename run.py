@@ -61,7 +61,8 @@ if parameters["filter_features"]:
 
 # precalculating some dimensionality reductions
 sc.tl.pca(adata, n_comps=parameters["n_comps"])
-with warnings.simplefilter('ignore', numba.errors.NumbaDeprecationWarning):
+with warnings.catch_warnings():
+  warnings.simplefilter('ignore', numba.errors.NumbaDeprecationWarning)
   sc.pp.neighbors(adata, n_neighbors=parameters["n_neighbors"])
 
 # denoise the graph by recomputing it in the first few diffusion components
