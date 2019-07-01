@@ -46,6 +46,10 @@ manuscript:
   publication_date: '2019-03-19'
 
 parameters:
+- id: filter_features
+  description: Whether to do feature filtering
+  type: logical
+  default: yes
 - id: n_neighbors
   description: Number of neighbours for knn
   type: integer

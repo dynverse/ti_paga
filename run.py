@@ -49,10 +49,13 @@ checkpoints["method_afterpreproc"] = time.time()
 #   ____________________________________________________________________________
 #   Basic preprocessing                                                     ####
 
-n_top_genes = min(2000, counts.shape[1])
-
 # normalisation & filtering
-sc.pp.recipe_zheng17(adata, n_top_genes=n_top_genes)
+if counts.shape[1] < 100 and parameters["filter_features"]:
+  print("You have less than 100 features, but the filter_features parameter is true. This will likely result in an error. Disable filter_features to avoid this")
+
+if parameters["filter_features"]:
+  n_top_genes = min(2000, counts.shape[1])
+  sc.pp.recipe_zheng17(adata, n_top_genes=n_top_genes)
 
 # precalculating some dimensionality reductions
 sc.tl.pca(adata, n_comps=parameters["n_comps"])
