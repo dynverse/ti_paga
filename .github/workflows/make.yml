@@ -35,9 +35,9 @@ jobs:
         if: github.repository != 'dynverse/ti_error'
         run: |
           mkdir test_out
-          docker run --entrypoint /tests/example.sh -v `pwd`/test_out:/mnt dynbuild /mnt/example.h5
-          docker run --entrypoint /tests/r/run.R -v `pwd`/test_out:/mnt dynbuild --dataset /mnt/example.h5 --output /mnt/output_r.h5 --verbosity 3
-          docker run --entrypoint Rscript -v `pwd`/test_out:/mnt dynbuild -e 'traj <- dynutils::read_h5("/mnt/output_r.h5"); if (!dynwrap::is_wrapper_with_trajectory(traj)) stop("No trajectory found!")'
+          docker run --entrypoint /code/example.sh -v `pwd`/test_out:/mnt dynbuild /mnt/example.h5
+          docker run -v `pwd`/test_out:/mnt dynbuild --dataset /mnt/example.h5 --output /mnt/output.h5 --verbosity 3
+          docker run --entrypoint Rscript -v `pwd`/test_out:/mnt dynbuild -e 'traj <- dynutils::read_h5("/mnt/output.h5"); if (!dynwrap::is_wrapper_with_trajectory(traj)) stop("No trajectory found!")'
           
       - name: Push
         run: |
