@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 
 import dynclipy
 task = dynclipy.main()
@@ -90,7 +90,7 @@ sc.pl.paga(adata, threshold=0.01, layout='fr', show=False)
 adata.uns['iroot'] = np.where(adata.obs.index == start_id)[0][0]
 if parameters["n_dcs"] == 0:
   sc.tl.diffmap(adata)
-sc.tl.dpt(adata, n_dcs = min(adata.obsm.X_diffmap.shape[1], 10))
+sc.tl.dpt(adata, n_dcs = min(adata.obsm['X_diffmap'].shape[1], 10))
 
 # run umap for a dimension-reduced embedding, use the positions of the paga
 # graph to initialize this embedding
